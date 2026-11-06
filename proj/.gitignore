@@ -1,0 +1,23 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+.env
+.env.*
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Large or generated files
+data/
+datasets/
+models/
+weights/
+outputs/
+logs/
+.cache/
+*.rar
+*.zip
+*.7z

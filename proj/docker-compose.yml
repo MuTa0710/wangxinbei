@@ -1,0 +1,22 @@
+﻿services:
+  b01-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: b01-dev:pt230-cu121
+    working_dir: /workspace/proj
+    stdin_open: true
+    tty: true
+    volumes:
+      - .:/workspace/proj
+      - b01-huggingface-cache:/root/.cache/huggingface
+      - b01-torch-cache:/root/.cache/torch
+    environment:
+      TZ: Etc/UTC
+      HF_HOME: /root/.cache/huggingface
+      TORCH_HOME: /root/.cache/torch
+    gpus: all
+
+volumes:
+  b01-huggingface-cache:
+  b01-torch-cache:

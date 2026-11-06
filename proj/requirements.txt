@@ -1,0 +1,32 @@
+﻿# PyTorch 官方 CUDA 12.1 wheel 源
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+# B01 赛题要求：PyTorch >= 2.0.0 且 <= 2.3.0
+torch==2.3.0+cu121
+# 与 torch 2.3.0 严格匹配
+torchvision==0.18.0+cu121
+
+# 数值计算与数据处理
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.2.2
+scikit-learn==1.5.0
+
+# 经纬度、区域和几何处理
+shapely==2.0.4
+pyproj==3.6.1
+
+# 本地开放权重模型与推理
+transformers==4.41.2
+accelerate==0.31.0
+safetensors==0.4.3
+tokenizers==0.19.1
+sentence-transformers==3.0.1
+
+# 结构化输入输出、配置和运行辅助
+pydantic==2.7.4
+orjson==3.10.5
+jsonlines==4.0.0
+PyYAML==6.0.1
+tqdm==4.66.4
+
