@@ -32,8 +32,15 @@ B01 赛题资料给出的环境要求：
     CUDA 12.1 runtime
     PyTorch 2.3.0+cu121
     torchvision 0.18.0+cu121
+    Transformers 4.51.3
+    Tokenizers 0.21.1
+    Accelerate 1.6.0
 
 选择 PyTorch 2.3.0 是因为它正好处于 B01 允许范围的上限，并且官方提供与 CUDA 12.1 对应的 torchvision 0.18.0 安装组合。使用上限版本可以避免后续误用 2.4 或更高版本而违反赛题约束。
+
+选择 Transformers 4.51.3 是为了支持 Qwen3。Qwen3 官方模型卡明确说明，低于 4.51.0 会出现 `KeyError: 'qwen3'`。因此原来的 Transformers 4.41.2 不能用于 Qwen3。该升级不会改变 B01 对 PyTorch 版本的限制；PyTorch 仍固定为 2.3.0。
+
+与 Transformers 4.51.3 配套固定 Tokenizers 0.21.1、Accelerate 1.6.0 和 Safetensors 0.5.3。当前只完成依赖声明，没有在 Windows 主机上构建 Ubuntu 容器或下载模型权重。
 
 ## 3. GPU 与宿主机要求
 

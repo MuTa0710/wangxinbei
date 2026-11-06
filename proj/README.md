@@ -11,6 +11,9 @@
 | CUDA | 12.1 runtime | 满足 B01 的 CUDA 12+ 要求，并与 PyTorch 2.3.0 官方 wheel 对应 |
 | PyTorch | 2.3.0 | B01 要求 PyTorch >=2.0.0 且 <=2.3.0 |
 | torchvision | 0.18.0 | 与 PyTorch 2.3.0 官方匹配 |
+| Transformers | 4.51.3 | Qwen3 官方模型卡要求至少 4.51.0 |
+| Tokenizers | 0.21.1 | 与 Transformers 4.51.3 配套固定 |
+| Accelerate | 1.6.0 | 支持本地 `device_map` 和混合精度推理 |
 | GPU | NVIDIA GPU，支持 CUDA 12.1 | Docker 运行时需要宿主机 NVIDIA 驱动和 NVIDIA Container Toolkit |
 
 PyTorch 2.3.0 / torchvision 0.18.0 / CUDA 12.1 的安装方式采用 PyTorch 官方 wheel 源。B01 没有要求 torchaudio，本项目暂不安装。
@@ -64,6 +67,16 @@ Windows PowerShell 可使用：
     torch 2.3.0
     torchvision 0.18.0
     CUDA 12.1
+
+Qwen3 依赖检查：
+
+    python -c "import transformers, tokenizers, accelerate; print(transformers.__version__, tokenizers.__version__, accelerate.__version__)"
+
+预期版本：
+
+    transformers 4.51.3
+    tokenizers 0.21.1
+    accelerate 1.6.0
 
 torch.cuda.is_available() 只有在使用 --gpus all、宿主机驱动正常且 NVIDIA Container Toolkit 配置完成时才会为 True。
 

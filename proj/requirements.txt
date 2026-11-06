@@ -17,10 +17,11 @@ shapely==2.0.4
 pyproj==3.6.1
 
 # 本地开放权重模型与推理
-transformers==4.41.2
-accelerate==0.31.0
-safetensors==0.4.3
-tokenizers==0.19.1
+# Qwen3 官方模型卡要求 transformers >= 4.51.0；固定 4.51.3 以保持可复现
+transformers==4.51.3
+accelerate==1.6.0
+safetensors==0.5.3
+tokenizers==0.21.1
 sentence-transformers==3.0.1
 
 # 结构化输入输出、配置和运行辅助
