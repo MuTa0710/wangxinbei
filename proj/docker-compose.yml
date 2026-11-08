@@ -4,17 +4,23 @@
       context: .
       dockerfile: Dockerfile
     image: b01-dev:pt230-cu121
-    working_dir: /workspace/proj
+    working_dir: /workspace/repo/proj
     stdin_open: true
     tty: true
     volumes:
-      - .:/workspace/proj
+      - ..:/workspace/repo
+      - ../data:/workspace/data:ro
       - b01-huggingface-cache:/root/.cache/huggingface
       - b01-torch-cache:/root/.cache/torch
     environment:
       TZ: Etc/UTC
       HF_HOME: /root/.cache/huggingface
       TORCH_HOME: /root/.cache/torch
+      HTTP_PROXY: http://host.docker.internal:1081
+      HTTPS_PROXY: http://host.docker.internal:1081
+      http_proxy: http://host.docker.internal:1081
+      https_proxy: http://host.docker.internal:1081
+      NO_PROXY: localhost,127.0.0.1,::1
     gpus: all
 
 volumes:

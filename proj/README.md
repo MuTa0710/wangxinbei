@@ -32,11 +32,18 @@ PyTorch 2.3.0 / torchvision 0.18.0 / CUDA 12.1 的安装方式采用 PyTorch 官
 
 后续开发代码、数据、模型权重和运行输出应另行加入，不要把大体积数据集和模型权重直接提交到 Git。
 
+当前 Compose 会将宿主机仓库根目录挂载到容器的 `/workspace/repo`，将 stage1 数据只读挂载到 `/workspace/data`，容器工作目录为 `/workspace/repo/proj`。因此可以直接在容器内执行 Git 操作，代码修改会同步到宿主机工作树。
+
 ## 构建镜像
 
 在项目根目录执行：
 
     docker build -t b01-dev:pt230-cu121 .
+
+若 Docker Hub 在当前网络不可达，可先使用镜像代理拉取并保留 Dockerfile 中的官方标签：
+
+    docker pull docker.m.daocloud.io/nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
+    docker tag docker.m.daocloud.io/nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04 nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu20.04
 
 ## 启动容器
 
@@ -53,6 +60,68 @@ PyTorch 2.3.0 / torchvision 0.18.0 / CUDA 12.1 的安装方式采用 PyTorch 官
 Windows PowerShell 可使用：
 
     docker compose run --rm b01-dev
+
+启动长期开发容器：
+
+    docker compose up -d b01-dev
+    docker compose exec b01-dev bash
+
+容器内 Git 已配置宿主机 Clash HTTP 代理 `host.docker.internal:1081`。如宿主机代理端口或 Docker Desktop 配置变化，应同步修改 `docker-compose.yml`。
+
+## M1 数据底座
+
+在容器内生成标准化轨迹和区域事件缓存：
+
+    python scripts/build_m1_cache.py --data-root /workspace/data
+
+输出位于 `artifacts/m1/`，包括输入文件 SHA256 清单、task1 标准化样本、task2 查询、2,000 条航迹标准化数据和航迹事实摘要。`artifacts/` 已加入 Git 忽略，不提交生成缓存。
+
+提交文件可用以下命令校验：
+
+    python scripts/validate_submission.py /workspace/repo/proj/artifacts/traj_result.jsonl
+
+## M2 区域事件引擎
+
+在 M1 缓存基础上生成 Task1 区域事件和跨区域进入顺序：
+
+    python scripts/build_m2_region_events.py --cache-dir artifacts/m1 --output artifacts/m2
+
+M2 不把航迹结束时仍在区域内的状态虚构成离开事件，并保留未闭合停留区间的
+`open_end` 标记。运行前会检查穿越、起点在区内、终点在区内和重复进入等边界场景。
+具体输出字段见 `docs/m2_region_events.md`。
+
+## M3 Task2 结构化检索基线
+
+在 M1 航迹缓存和 M2 几何引擎基础上生成 Task2 查询 IR、区域命中缓存和 Top-K 结果：
+
+    python scripts/build_m3_retrieval.py --cache-dir artifacts/m1 --output artifacts/m3
+
+M3 先执行时间、高度、速度和区域硬过滤，再使用轨迹统计特征匹配行为顺序并排序。
+输出说明见 `docs/m3_retrieval.md`。
+
+## M4/M5 Task1 与统一提交
+
+生成 Task1 四选一结果：
+
+    python scripts/build_m4_task1.py --cache-dir artifacts/m1 --output artifacts/m4 --backend deterministic
+
+运行 M3、M4 并合并为官方提交文件，同时执行结构校验：
+
+    python scripts/run_m5_pipeline.py --cache-dir artifacts/m1 --work-dir artifacts --output artifacts/m5
+
+输出为 `artifacts/m5/traj_result.jsonl`，报告为 `artifacts/m5/m5_report.json`。M4/M5 的字段和运行方式见 `docs/m4_m5.md`。
+
+## M6 受控 Agent 工作流
+
+在 M0-M5 确定性底座上运行受控 Agent 层：
+
+    python scripts/run_m6_agent.py --backend deterministic
+
+使用本地 Qwen3 时：
+
+    python scripts/run_m6_agent.py --backend qwen3 --model-name /models/Qwen3-4B
+
+Qwen3 只负责 Task1 语义判断和 Task2 查询 IR 解析；M2 区域事实、M3 轨迹检索、排序、提交生成和校验仍由固定工具完成。每个样本默认最多调用两次模型（一次初试 + 一次错误回馈重试，可用 `--max-retries` 调整），解析仍失败自动回退到 M3/M4 确定性实现。输出和设计说明见 `docs/m6_agent.md`。
 
 ## 环境检查
 

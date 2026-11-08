@@ -40,7 +40,13 @@ B01 赛题资料给出的环境要求：
 
 选择 Transformers 4.51.3 是为了支持 Qwen3。Qwen3 官方模型卡明确说明，低于 4.51.0 会出现 `KeyError: 'qwen3'`。因此原来的 Transformers 4.41.2 不能用于 Qwen3。该升级不会改变 B01 对 PyTorch 版本的限制；PyTorch 仍固定为 2.3.0。
 
-与 Transformers 4.51.3 配套固定 Tokenizers 0.21.1、Accelerate 1.6.0 和 Safetensors 0.5.3。当前只完成依赖声明，没有在 Windows 主机上构建 Ubuntu 容器或下载模型权重。
+与 Transformers 4.51.3 配套固定 Tokenizers 0.21.1、Accelerate 1.6.0 和 Safetensors 0.5.3。
+
+已在 Windows 主机的 Docker Desktop Linux 引擎中成功构建镜像 `b01-dev:pt230-cu121`。由于当前 Ubuntu 20.04 的 deadsnakes 源不再提供 Python 3.12，Dockerfile 改为从 Python 3.12.10 源码编译安装，仍保持 Ubuntu 20.04 基础环境。构建时已安装并验证上述固定版本依赖，未下载 Qwen3 模型权重。镜像大小约 9.66 GB，主要由 CUDA/PyTorch 运行库构成。
+
+使用 `docker run --rm --gpus all` 以及 Compose 的 `gpus: all` 均已验证可访问宿主机 NVIDIA GeForce RTX 4090，容器内 `torch.cuda.is_available()` 为 `True`。
+
+当前 Compose 将仓库根目录绑定到 `/workspace/repo`，stage1 数据绑定到 `/workspace/data:ro`，并通过 `192.168.65.254:1081` 为容器提供 HTTP/HTTPS 代理。M0/M1 的配置、schema、数据读取和缓存脚本均位于 `proj/src` 与 `proj/scripts`。
 
 ## 3. GPU 与宿主机要求
 

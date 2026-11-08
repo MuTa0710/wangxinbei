@@ -8,9 +8,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
+ARG PYTHON_VERSION=3.12.10
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       software-properties-common \
        ca-certificates \
        curl \
        git \
@@ -22,18 +23,34 @@ RUN apt-get update \
        libproj-dev \
        proj-data \
        proj-bin \
+         libssl-dev \
+         zlib1g-dev \
+         libbz2-dev \
+         libreadline-dev \
+         libsqlite3-dev \
+         libffi-dev \
+         liblzma-dev \
+         libncursesw5-dev \
+         libgdbm-dev \
+         libgdbm-compat-dev \
+         libnss3-dev \
+         uuid-dev \
+         tk-dev \
+         libexpat1-dev \
        tzdata \
-    && add-apt-repository ppa:deadsnakes/ppa \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-       python3.12 \
-       python3.12-dev \
-       python3.12-venv \
-    && ln -sf /usr/bin/python3.12 /usr/local/bin/python \
-    && ln -sf /usr/bin/python3.12 /usr/local/bin/python3 \
-    && curl -sS https://bootstrap.pypa.io/get-pip.py | python \
+      && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz" -o /tmp/python.tgz \
+      && tar -xzf /tmp/python.tgz -C /tmp \
+      && cd "/tmp/Python-${PYTHON_VERSION}" \
+      && ./configure --prefix=/opt/python3.12 --with-ensurepip=install \
+      && make -j"$(nproc)" \
+      && make altinstall \
+      && ln -sf /opt/python3.12/bin/python3.12 /usr/local/bin/python \
+      && ln -sf /opt/python3.12/bin/python3.12 /usr/local/bin/python3 \
+      && ln -sf /opt/python3.12/bin/pip3.12 /usr/local/bin/pip \
     && python -m pip install --upgrade pip==24.1.2 setuptools==70.1.1 wheel==0.43.0 \
-    && rm -rf /var/lib/apt/lists/*
+      && rm -rf /tmp/python.tgz "/tmp/Python-${PYTHON_VERSION}"
 
 WORKDIR /workspace/proj
 

@@ -17,6 +17,7 @@ weights
 outputs
 logs
 .cache
+artifacts
 *.rar
 *.zip
 *.7z

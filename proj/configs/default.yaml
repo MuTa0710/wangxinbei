@@ -1,0 +1,28 @@
+schema_version: m1.0
+
+paths:
+  data_root: /workspace/data
+  cache_dir: /workspace/repo/proj/artifacts/m1
+  model_cache: /root/.cache/huggingface
+  torch_cache: /root/.cache/torch
+
+submission:
+  output_file: /workspace/repo/proj/artifacts/traj_result.jsonl
+  task1_field_name: 选项
+  task2_field_name: 结果
+
+normalization:
+  large_gap_seconds: 300.0
+  keep_raw_values: true
+  sort_by_timestamp: true
+
+model:
+  primary: Qwen/Qwen3-4B
+  fallback: Qwen/Qwen3-1.7B
+  dtype: float16
+  trust_remote_code: true
+  enable_thinking: false
+
+runtime:
+  offline_after_assets_ready: true
+  max_json_repair_attempts: 1

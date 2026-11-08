@@ -1,0 +1,1 @@
+"""Deterministic geographic event calculations."""
