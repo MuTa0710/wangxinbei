@@ -123,6 +123,23 @@ M3 先执行时间、高度、速度和区域硬过滤，再使用轨迹统计�
 
 Qwen3 只负责 Task1 语义判断和 Task2 查询 IR 解析；M2 区域事实、M3 轨迹检索、排序、提交生成和校验仍由固定工具完成。每个样本默认最多调用两次模型（一次初试 + 一次错误回馈重试，可用 `--max-retries` 调整），解析仍失败自动回退到 M3/M4 确定性实现。输出和设计说明见 `docs/m6_agent.md`。
 
+## M8 Task2 规则预筛 → Qwen3 → 官方结果
+
+先用规则相似度产出 2×top_k 候选池，再把候选卡喂给本地 Qwen3-4B，模型直接输出官方结构（`样本编号` + `结果`）；runtime 校验失败回退规则序：
+
+    # 规则后端（无 GPU，先确认流程/格式/校验）
+    python scripts/run_m8_pipeline.py --backend rule --output artifacts/m8_rule
+
+    # Qwen3 全量（copy 模式：模型按候选池顺序输出，严格校验）
+    python scripts/run_m8_pipeline.py --backend qwen3 --prompt-style copy \
+      --model-name /models/Qwen3-4B --output artifacts/m8_final
+
+    # 评审模式（允许模型重排/取舍，当前 4B 效果不稳定，仅作对照）
+    python scripts/run_m8_pipeline.py --backend qwen3 --prompt-style judge \
+      --model-name /models/Qwen3-4B --output artifacts/m8_judge
+
+流程、产物和当前实测见 `docs/m8_pipeline.md`；完整方案与筛选约束分析见 `docs/m8_rule_recall_llm.md`。
+
 ## 环境检查
 
 进入容器后执行：
